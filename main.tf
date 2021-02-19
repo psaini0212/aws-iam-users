@@ -40,7 +40,3 @@ module "iam_user" {
   }
 }
 
-output "userdetails" {
-  value = values(module.iam_user)[*]
-}
-
