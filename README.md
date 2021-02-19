@@ -3,6 +3,20 @@ This code will create IAM users in AWS for multiple environments.
 As it is under single organisation (rather multiple AWS accounts), the environment segregation is by creating groups.
 The permissions for different resource per environment needs to be managed in the policy attached to groups.
 
+#### Plan
+Create users for each environment in the asked format
+Creating group for each environment and assign users to the appropriate group so that permissions 
+can be assigned on group level rather to individual user.
+Output the Username, Access Key Id and Secret Key in single line.
+
+####Things to know
+1) I have not used pgp key for encryption for this use case for ease which means 
+the Secret Key will be visible (unencrypted) in the state file (in our case it's local).
+2) I have used aws module for this purpose for ease but for complex cases if any 
+we can write our own module by using the resource providers.
+3) I have tested this with Terraform v0.14.7, I have not restricted the terraform version in the terraform block, 
+should work versions > 0.12
+
 ####Pre-requisites
 The User running the code needs to have access to create IAM users in AWS.
 You need to set Access Key Id and Secret Access Key of your user.
@@ -42,4 +56,3 @@ To Create Users (actual run) -
 To delete Users -
 
 `terraform destroy`
-
