@@ -13,7 +13,7 @@ provider "aws" {
 }
 
 locals {
-  env_users_table = flatten([
+  env_user_pair = flatten([
     for env in var.environments : [
       for user in var.users : {
         env      = env
@@ -21,14 +21,16 @@ locals {
       }
     ]
   ])
-}
-
-output "env_users_table" {
-  value = local.env_users_table
+  env_users_mapping = flatten([
+    for env in var.environments : {
+      env   = env
+      users = formatlist("%s-%s", var.users, env)
+    }
+  ])
 }
 
 module "iam_user" {
-  for_each                      = { for t in local.env_users_table : t.username => t }
+  for_each                      = { for t in local.env_user_pair : t.username => t }
   source                        = "terraform-aws-modules/iam/aws//modules/iam-user"
   version                       = "3.8.0"
   name                          = each.key
@@ -38,5 +40,15 @@ module "iam_user" {
   tags = {
     env = each.value["env"]
   }
+}
+
+module "iam_iam-group-with-policies" {
+  depends_on  = [module.iam_user]
+  for_each    = { for y in local.env_users_mapping : y.env => y }
+  source      = "terraform-aws-modules/iam/aws//modules/iam-group-with-policies"
+  version     = "3.8.0"
+  attach_iam_self_management_policy = true
+  name        = each.key
+  group_users = each.value["users"]
 }
 
